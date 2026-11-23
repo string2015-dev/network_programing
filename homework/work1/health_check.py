@@ -130,11 +130,11 @@ def check(host: str, port: int, path: str = "/") -> dict:
     
     start = time.perf_counter()
     # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-    # target = f"{host}:{port}{path}"
-    # ip ="-"
-    # code =None
-    # ms =None
-    # note =""
+    target = f"{host}:{port}{path}"
+    ip ="-"
+    code =None
+    ms =None
+    note =""
     try:
         ip = socket.gethostbyname(host)                     # DNS
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -152,9 +152,9 @@ def check(host: str, port: int, path: str = "/") -> dict:
     except socket.timeout:
         note ="시간 초과"
     except (OSError, ValueError) as e:
-        note = "오류: ",etr(e)
+        note = "오류: " +str(e)
 
-        result = {"target": f"{host}:{port}{path}"
+    result = {"target": f"{host}:{port}{path}"
                   , "ip": ip
                   , "code": code
                   , "ms": ms
