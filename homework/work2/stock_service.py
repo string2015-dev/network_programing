@@ -61,10 +61,14 @@ class StockServer:
           "20" → 20,  "0" / "-3" / "abc" / "2.5" → ValueError("수량은 1 이상의 정수")
         """
         # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        for k,v in self.inventory.items():
-            if v[1] < 1 or type(v[1]) != int:
-                raise ValueError("수량은 1 이상의 정수")
-            
+        try:
+            qty = int(text)
+        except ValueError:
+            raise ValueError("수량은 1 이상의 정수")
+
+        if qty < 1:
+            raise ValueError("수량은 1 이상의 정수")
+        return qty
         
         raise NotImplementedError("STEP 1: parse_qty")
 
