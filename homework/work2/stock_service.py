@@ -30,6 +30,9 @@
 """
 import socket
 import time
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lab" / "student" / "lab3_protocol"))
 
 from protocol import LineReader, send_line
 
@@ -58,6 +61,11 @@ class StockServer:
           "20" → 20,  "0" / "-3" / "abc" / "2.5" → ValueError("수량은 1 이상의 정수")
         """
         # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
+        for k,v in self.inventory.items():
+            if v[1] < 1 or type(v[1]) != int:
+                raise ValueError("수량은 1 이상의 정수")
+            
+        
         raise NotImplementedError("STEP 1: parse_qty")
 
     def warn(self, qty: int) -> str:
