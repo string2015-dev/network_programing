@@ -62,24 +62,35 @@ class ChatServer:
 
         서버 화면에도 print(text) 로 로그를 남기세요.
         """
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 1: broadcast")
+        print(text)
+        with self.lock:
+            targets = list(self.clients)
+        for conn in targets:
+            if conn is exclude:
+                continue
+            try:
+                send_line(conn, text)
+            except OSError:
+                self.remove(conn)
 
     def remove(self, conn: socket.socket) -> str | None:
         """
         [STEP 2] clients 에서 conn 을 지우고, 지운 닉네임을 return 합니다. 없으면 None.
         with self.lock: 안에서 self.clients.pop(conn, None)
         """
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 2: remove")
+        with self.lock:
+            return self.clients.pop(conn, None)
 
     def register(self, conn: socket.socket, nickname: str) -> bool:
         """
         [STEP 3] 닉네임을 등록합니다. 이미 같은 닉네임이 있으면 False, 등록 성공이면 True.
         with self.lock: 안에서 확인과 등록을 '한 번에' 해야 합니다. (왜일까요?)
         """
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 3: register")
+        with self.lock:
+            if nickname in self.clients.values():
+                return False
+            self.clients[conn] = nickname
+            return True
 
     def nicknames(self) -> list[str]:
         with self.lock:
@@ -105,8 +116,30 @@ class ChatServer:
         """
         reader = LineReader(conn)
         try:
-            # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-            raise NotImplementedError("STEP 4: handle_client")
+            nickname = None
+            while nickname is None:
+                send_line(conn, "NICK? 닉네임을 입력하세요")
+                name = reader.read_line()
+                if name is None:
+                    return
+                name = name.strip()[:20]
+                if not name or name.startswith("/"):
+                    send_line(conn, "ERR 닉네임은 비울 수 없고 / 로 시작할 수 없습니다")
+                elif not self.register(conn, name):
+                    send_line(conn, f"ERR '{name}' 은(는) 이미 사용 중인 닉네임입니다")
+                else:
+                    nickname = name
+            send_line(conn, f"OK {nickname} 님 환영합니다. /list 접속자 목록, /quit 퇴장")
+            self.broadcast(f"*** {nickname} 님이 입장했습니다 ({addr[0]})")
+
+            while True:
+                line = reader.read_line()
+                if line is None or line.strip() == "/quit":
+                    break
+                if line.strip() == "/list":
+                    send_line(conn, "접속자: " + ", ".join(self.nicknames()))
+                elif line.strip():
+                    self.broadcast(f"[{nickname}] {line}")
         except (ConnectionResetError, OSError):
             pass
         finally:

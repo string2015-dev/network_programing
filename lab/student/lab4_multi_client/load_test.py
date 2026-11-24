@@ -27,7 +27,20 @@ def worker(client_id: int, host: str, port: int, rounds: int, results: list) -> 
     """
     start = time.perf_counter()
     # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-    results.append((client_id, 0.0, "미구현")); return  # TODO: STEP 1
+    try:
+        with socket.create_connection((host,port), timeout=30) as s:
+            for i in range(rounds):
+                msg = f"client-{client_id} msg-{i}".encode("utf-8")
+                s.sendall(msg)
+                echo = s.recv(1024)
+                if echo!=msg:
+                    raise ValueError(f"응답 불일치: {echo!r}")
+                time.sleep(0.2)
+        results.append(client_id, time.perf_counter()-start, "ok")
+
+
+    except Exception as e:
+        results.append((client_id, time.perf_counter()-start, "fail")); return  # TODO: STEP 1
 
 
 def main() -> None:

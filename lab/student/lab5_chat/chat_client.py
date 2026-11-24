@@ -31,8 +31,9 @@ class ChatClient:
     def connect(self) -> None:
         """[STEP 1] socket.create_connection((host, port), timeout=5) 로 연결 후
         self.sock.settimeout(None) (받기 스레드는 무한 대기해야 하므로), self.connected.set()"""
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 1")
+        self.sock = socket.create_connection((self.host, self.port), timeout=5)
+        self.sock.settimeout(None)
+        self.connected.set()
 
     def receive_loop(self) -> None:
         """
@@ -45,8 +46,18 @@ class ChatClient:
           마지막에 self.connected.clear()
           (OSError 는 내가 소켓을 닫았을 때 발생하므로 조용히 종료)
         """
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 2")
+        reader = LineReader(self.sock)
+        try:
+            while self.connected.is_set():
+                line = reader.read_line()
+                if line is None:
+                    print("\r[서버와 연결이 끊겼습니다] Enter 를 누르면 종료합니다")
+                    break
+                print(f"\r{line}\n> ", end="", flush=True)
+        except OSError:
+            pass
+        finally:
+            self.connected.clear()
 
     def run(self) -> None:
         """
@@ -59,8 +70,20 @@ class ChatClient:
               if text.strip() == "/quit": break
           finally: self.connected.clear(); self.sock.close()
         """
-        # ===== TODO: 이 부분을 완성하세요 (위 설명의 순서를 따라가세요) =====
-        raise NotImplementedError("STEP 3")
+        threading.Thread(target=self.receive_loop, daemon=True).start()
+        try:
+            while self.connected.is_set():
+                text = input("> ")
+                if not self.connected.is_set():
+                    break
+                send_line(self.sock, text)
+                if text.strip() == "/quit":
+                    break
+        except (KeyboardInterrupt, EOFError):
+            pass
+        finally:
+            self.connected.clear()
+            self.sock.close()
 
 
 def main() -> None:
