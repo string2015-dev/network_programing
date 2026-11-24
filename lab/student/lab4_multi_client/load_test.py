@@ -36,7 +36,7 @@ def worker(client_id: int, host: str, port: int, rounds: int, results: list) -> 
                 if echo!=msg:
                     raise ValueError(f"응답 불일치: {echo!r}")
                 time.sleep(0.2)
-        results.append(client_id, time.perf_counter()-start, "ok")
+        results.append((client_id, time.perf_counter()-start, "ok"))
 
 
     except Exception as e:

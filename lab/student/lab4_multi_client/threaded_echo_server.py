@@ -99,7 +99,7 @@ class ThreadedEchoServer:
             print(f"[강제 종료] {addr[0]} : {addr[1]} → 연결이 강제로 끊김RST")
         finally: 
             conn.close(), self._change_active(-1),
-        print(f"[업무 종료] {addr[0]} : {addr[1]} → {data.decode('utf-8', errors ='replace')}")
+            print(f"[업무 종료] {addr[0]} : {addr[1]} → {data.decode('utf-8', errors ='replace')}")
         
         # raise NotImplementedError("STEP 3: 스레드에서 클라이언트 전담 처리")
 
